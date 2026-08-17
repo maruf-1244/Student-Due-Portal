@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Finance Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; color: #333; }
+
+        /* Top Navbar */
+        .navbar {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .navbar-brand { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .logout-btn {
+            background-color: #d9534f;
+            color: white;
+            padding: 7px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover { background-color: #c9302c; }
+
+        /* Main Layout */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+        /* Student Profile Card */
+        .profile-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #2c3e50;
+        }
+        .avatar svg { width: 45px; height: 45px; fill: #495057; }
+        .profile-info h2 { font-size: 24px; color: #1a252f; margin-bottom: 5px; }
+        .profile-info p { color: #6c757d; font-size: 15px; }
+
+        /* Financial Overview Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .stat-card.total { background: linear-gradient(135deg, #495057, #343a40); }
+        .stat-card.due { background: linear-gradient(135deg, #d97706, #b45309); }
+        .stat-card.due-70 { background: linear-gradient(135deg, #f8d7da, #f5c6cb); color: #721c24; border: 1px solid #f5c6cb; }
+
+        .stat-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; margin-bottom: 5px; }
+        .stat-value { font-size: 26px; font-weight: bold; }
+        .stat-icon svg { width: 38px; height: 38px; opacity: 0.8; }
+
+        /* Financial Data Table */
+        .table-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .table-section h3 { font-size: 18px; color: #2c3e50; margin-bottom: 15px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; text-align: center; border: 1px solid #dee2e6; font-size: 14px; }
+        th { background-color: #34495e; color: white; font-weight: 500; }
+        tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        tbody tr:hover { background-color: #e9ecef; }
+        
+        /* Footer Note */
+        .footer-note { text-align: center; margin-top: 30px; color: #868e96; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <!-- University Logo Icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            Northern University of Business & Technology, Khulna
+        </div>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <!-- Student Info Header -->
+        <div class="profile-card">
+            <div class="avatar">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <div class="profile-info">
+                <h2 id="student-name">Loading...</h2>
+                <p><strong>Student ID:</strong> <span id="student-id"></span> &nbsp;|&nbsp; <strong>Credit Taken:</strong> <span id="credit-taken"></span></p>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div>
+                    <div class="stat-title">Total Payable</div>
+                    <div class="stat-value"><span id="total-payable">0</span> BDT</div>
+                </div>
+                <div class="stat-icon">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                </div>
+            </div>
+
+            <div class="stat-card due">
+                <div>
+                    <div class="stat-title">Dues Up To Date</div>
+                    <div class="stat-value"><span id="dues-upto">0</span> BDT</div>
+                </div>
+                <div class="stat-icon">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"/></svg>
+                </div>
+            </div>
+
+            <div class="stat-card due-70">
+                <div>
+                    <div class="stat-title">70% Dues (Last Date 24.06.2026)</div>
+                    <div class="stat-value"><span id="dues-70">0</span> BDT</div>
+                </div>
+                <div class="stat-icon">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Financial Table -->
+        <div class="table-section">
+            <h3>Full Financial Details</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reg Fee</th>
+                            <th>Tuition Fee</th>
+                            <th>Scholarship</th>
+                            <th>Others</th>
+                            <th>Net Payable</th>
+                            <th>Previous Dues</th>
+                            <th>Received Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="reg-fee">0</td>
+                            <td id="tuition-fee">0</td>
+                            <td id="scholarship">0</td>
+                            <td id="others">0</td>
+                            <td id="net-payable">0</td>
+                            <td id="prev-dues">0</td>
+                            <td id="received-amount">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            &copy; Northern University of Business & Technology Khulna. All rights reserved.
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
