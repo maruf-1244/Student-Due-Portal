@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --input-bg: rgba(15, 23, 42, 0.5);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --toggle-bg: rgba(255, 255, 255, 0.1);
+            --toggle-color: #f8fafc;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --input-bg: #f8fafc;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --toggle-bg: rgba(0, 0, 0, 0.05);
+            --toggle-color: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body {
+            min-height: 100vh;
+            background: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Floating Theme Toggle Switch */
+        .theme-toggle {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--toggle-bg);
+            border: 1px solid var(--border-color);
+            color: var(--toggle-color);
+            padding: 10px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        .theme-toggle:hover { transform: scale(1.05); }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.4;
+            animation: float 10s infinite alternate ease-in-out;
+        }
+        .orb-1 { width: 350px; height: 350px; background: #6366f1; top: -50px; left: -50px; }
+        .orb-2 { width: 300px; height: 300px; background: #a855f7; bottom: -50px; right: -50px; animation-delay: -5s; }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 40px) scale(1.1); }
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            z-index: 10;
+        }
+
+        .brand-header { text-align: center; margin-bottom: 30px; }
+        .brand-header i {
+            font-size: 38px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .brand-header h2 { font-size: 24px; color: var(--text-primary); font-weight: 700; }
+        .brand-header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+        .tabs {
+            display: flex;
+            background: var(--input-bg);
+            padding: 5px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: var(--text-primary); font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+        .input-box { position: relative; display: flex; align-items: center; }
+        .input-box i { position: absolute; left: 14px; color: var(--text-secondary); }
+        .input-box input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+        }
+        .input-box input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .form-section { display: none; }
+        .form-section.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">
+        <i class="fa-solid fa-sun" id="theme-icon"></i>
+        <span id="theme-text">Light Mode</span>
+    </button>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="login-card">
+        <div class="brand-header">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h2>Portal Access</h2>
+            <p>Select your portal type to continue</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('student')">Student Portal</button>
+            <button class="tab-btn" onclick="switchTab('admin')">Admin Portal</button>
+        </div>
+
+        <form id="student-form" class="form-section active" action="/login" method="POST">
+            <div class="form-group">
+                <label>Student ID Number</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-id-card"></i>
+                    <input type="text" name="studentId" placeholder="e.g. 11180120222" required>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">View Account Details <i class="fa-solid fa-arrow-right"></i></button>
+        </form>
+
+        <form id="admin-form" class="form-section" action="/admin-login" method="POST">
+            <div class="form-group">
+                <label>Admin Username</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Admin Dashboard Login <i class="fa-solid fa-arrow-right"></i></button>
+        </form>
+    </div>
+
+    <script>
+        function switchTab(type) {
+            const studentBtn = document.querySelectorAll('.tab-btn')[0];
+            const adminBtn = document.querySelectorAll('.tab-btn')[1];
+            const studentForm = document.getElementById('student-form');
+            const adminForm = document.getElementById('admin-form');
+
+            if (type === 'student') {
+                studentBtn.classList.add('active');
+                adminBtn.classList.remove('active');
+                studentForm.classList.add('active');
+                adminForm.classList.remove('active');
+            } else {
+                adminBtn.classList.add('active');
+                studentBtn.classList.remove('active');
+                adminForm.classList.add('active');
+                studentForm.classList.remove('active');
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (theme === 'light') {
+                icon.className = 'fa-solid fa-moon';
+                text.innerText = 'Dark Mode';
+            } else {
+                icon.className = 'fa-solid fa-sun';
+                text.innerText = 'Light Mode';
+            }
+        }
+
+        // Initialize Saved Theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(savedTheme);
+    </script>
+</body>
+</html>

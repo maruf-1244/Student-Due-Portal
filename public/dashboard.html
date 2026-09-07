@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Financial Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #0b0f19;
+            --nav-bg: rgba(15, 23, 42, 0.85);
+            --card-bg: rgba(30, 41, 59, 0.5);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --profile-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            --sidebar-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --profile-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            --sidebar-bg: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { background: var(--bg-body); color: var(--text-primary); min-height: 100vh; }
+
+        .navbar {
+            background: var(--nav-bg);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand { font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        .brand i { color: #a855f7; }
+
+        .nav-actions { display: flex; align-items: center; gap: 12px; }
+        .theme-btn, .pdf-btn, .pay-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .theme-btn {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        .theme-btn:hover { background: rgba(168, 85, 247, 0.3); transform: translateY(-1px); }
+        .pdf-btn {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            border: none;
+        }
+        .pdf-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .pay-btn {
+            background: #22c55e;
+            color: #fff;
+            border: none;
+        }
+        .pay-btn:hover { background: #16a34a; transform: translateY(-1px); }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 8px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .logout-btn:hover { background: #ef4444; color: #ffffff; }
+
+        /* Full Dashboard Layout */
+        .dashboard-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 65px);
+        }
+
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+        }
+
+        .notice-box {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: auto;
+        }
+        .notice-box h4 { font-size: 13px; color: #818cf8; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .notice-box p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+        .main-content { padding: 30px 40px; }
+
+        /* Dynamic Section Management */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .profile-card {
+            background: var(--profile-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+        .profile-info h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+        .profile-info p { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+
+        .badges { display: flex; gap: 8px; margin-top: 12px; }
+        .badge { background: rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-primary); }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 20px;
+        }
+        .info-card h3 { font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+
+        .data-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .data-row .label { color: var(--text-secondary); }
+        .data-row .val { font-weight: 600; color: var(--text-primary); }
+
+        .progress-bar-wrap { margin-top: 15px; background: rgba(255,255,255,0.08); border-radius: 10px; height: 8px; overflow: hidden; }
+        .progress-bar-fill { background: #22c55e; height: 100%; width: 0%; transition: width 0.6s ease; }
+
+        .highlight-card { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .highlight-card.cleared { background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 20px;
+        }
+
+        /* Custom Table Styling for Records & Courses */
+        .custom-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .custom-table th, .custom-table td { padding: 12px 14px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--border-color); }
+        .custom-table th { color: var(--text-secondary); font-weight: 600; }
+        .custom-table td { color: var(--text-primary); }
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-success { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+        .status-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+        /* Form Controls */
+        .support-form input, .support-form textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            outline: none;
+        }
+        .support-form button {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--border-color); width: 90%; max-width: 420px; border-radius: 20px; padding: 25px; color: var(--text-primary); }
+        .pg-option { border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; margin-top: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-weight: 600; }
+        .pg-option:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); }
+
+        @media (max-width: 1100px) {
+            .dashboard-wrapper { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .info-grid, .bottom-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> Student Financial Portal</div>
+        <div class="nav-actions">
+            <button class="pay-btn" onclick="openPaymentModal()"><i class="fa-solid fa-credit-card"></i> Pay Dues</button>
+            <button class="pdf-btn" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> HD Receipt</button>
+            <button class="theme-btn" onclick="toggleTheme()">
+                <i class="fa-solid fa-sun" id="theme-icon"></i>
+                <span id="theme-text">Light Mode</span>
+            </button>
+            <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="active" onclick="switchTab('overview', this)"><a><i class="fa-solid fa-chart-pie"></i> Financial Overview</a></li>
+                <li onclick="switchTab('records', this)"><a><i class="fa-solid fa-receipt"></i> Payment Records</a></li>
+                <li onclick="switchTab('registration', this)"><a><i class="fa-solid fa-book"></i> Course Registration</a></li>
+                <li onclick="switchTab('support', this)"><a><i class="fa-solid fa-headset"></i> Financial Support</a></li>
+            </ul>
+
+            <div class="notice-box">
+                <h4><i class="fa-solid fa-circle-info"></i> Notice Board</h4>
+                <p>Final Semester assessment clearance fees must be completed before the upcoming midterm exam schedule.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="pdf-area">
+            
+            <!-- 1. Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="profile-card">
+                    <div class="profile-info">
+                        <h1 id="st-name">Loading...</h1>
+                        <p>Student ID: <span id="st-id" style="font-weight: 600; color: var(--text-primary);">---</span></p>
+                        <div class="badges">
+                            <span class="badge"><i class="fa-solid fa-laptop-code"></i> Computer Science</span>
+                            <span class="badge"><i class="fa-solid fa-calendar"></i> Semester 8</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fa-solid fa-receipt"></i> Fee Breakdown</h3>
+                        <div class="data-row"><span class="label">Credits Taken:</span><span class="val" id="st-credit">0</span></div>
+                        <div class="data-row"><span class="label">Tuition Fee:</span><span class="val" id="st-tuition">0 BDT</span></div>
+                        <div class="data-row"><span class="label">Registration Fee:</span><span class="val" id="st-reg">0 BDT</span></div>
+                        <div class="data-row"><span class="label">Scholarship:</span><span class="val" id="st-scholarship">0%</span></div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3><i class="fa-solid fa-wallet"></i> Payment Summary</h3>
+                        <div class="data-row"><span class="label">Total Payable:</span><span class="val" id="st-payable">0 BDT</span></div>
+                        <div class="data-row"><span class="label">Total Paid:</span><span class="val" id="st-paid" style="color:#16a34a;">0 BDT</span></div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-fill" id="pay-progress"></div>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px; text-align: right;" id="pay-progress-text">0% Paid</p>
+                    </div>
+
+                    <div class="info-card highlight-card" id="due-card">
+                        <h3 style="color:#dc2626;"><i class="fa-solid fa-circle-exclamation"></i> Outstanding Dues</h3>
+                        <div class="data-row"><span class="label">100% Dues:</span><span class="val" id="st-dues" style="font-size: 18px; color:#dc2626;">0 BDT</span></div>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">Due Status: <span style="color:#ef4444; font-weight: 600;">Action Required</span></p>
+                    </div>
+                </div>
+
+                <div class="bottom-grid">
+                    <div class="info-card">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</h3>
+                        <div class="data-row"><span class="label">Initial Registration Installment</span><span class="val">Completed (#TRX-9821)</span></div>
+                        <div class="data-row"><span class="label">Mid-Term Assessment Fee</span><span class="val">Completed (#TRX-4412)</span></div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3><i class="fa-solid fa-shield-halved"></i> Payment Status</h3>
+                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">Clear your dues on time to keep registration and portal features active without interruptions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Payment Records Tab -->
+            <div id="records" class="tab-content">
+                <div class="info-card">
+                    <h3><i class="fa-solid fa-file-invoice-dollar"></i> Detailed Payment History</h3>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Txn ID</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#TRX-9821</td>
+                                <td>Initial Registration Installment</td>
+                                <td>10 Jan 2026</td>
+                                <td>10,000 BDT</td>
+                                <td><span class="status-badge status-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>#TRX-4412</td>
+                                <td>Mid-Term Assessment Fee</td>
+                                <td>15 Feb 2026</td>
+                                <td>8,000 BDT</td>
+                                <td><span class="status-badge status-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>#TRX-PENDING</td>
+                                <td>Final Semester Due Clearance</td>
+                                <td>Upcoming</td>
+                                <td>7,820 BDT</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Course Registration Tab -->
+            <div id="registration" class="tab-content">
+                <div class="info-card">
+                    <h3><i class="fa-solid fa-book-open"></i> Registered Courses - Current Semester</h3>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Title</th>
+                                <th>Credits</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CSE-401</td>
+                                <td>Microprocessor & Interfacing</td>
+                                <td>3.0</td>
+                                <td><span class="status-badge status-success">Approved</span></td>
+                            </tr>
+                            <tr>
+                                <td>CSE-402</td>
+                                <td>Compiler Design & Construction</td>
+                                <td>3.0</td>
+                                <td><span class="status-badge status-success">Approved</span></td>
+                            </tr>
+                            <tr>
+                                <td>CSE-405</td>
+                                <td>Operating System Lab</td>
+                                <td>1.5</td>
+                                <td><span class="status-badge status-success">Approved</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Financial Support Tab -->
+            <div id="support" class="tab-content">
+                <div class="info-card">
+                    <h3><i class="fa-solid fa-headset"></i> Financial Assistance & Query Support</h3>
+                    <form class="support-form" onsubmit="event.preventDefault(); alert('Your query has been submitted to the accounts team.');">
+                        <label style="font-size: 13px; color: var(--text-secondary);">Subject</label>
+                        <input type="text" placeholder="e.g. Scholarship Adjustment / Fee Extension" required>
+                        
+                        <label style="font-size: 13px; color: var(--text-secondary);">Details / Query</label>
+                        <textarea rows="4" placeholder="Describe your issue or financial request here..." required></textarea>
+                        
+                        <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Application</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Payment Gateway Modal -->
+    <div class="modal" id="payModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 16px;">Select Payment Method</h3>
+                <i class="fa-solid fa-xmark" onclick="closePaymentModal()" style="cursor: pointer;"></i>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">Amount Payable: <b id="modal-due-amt" style="color:#22c55e;">0 BDT</b></p>
+            <div class="pg-option" onclick="processPayment('bKash')">
+                <i class="fa-solid fa-mobile-screen" style="color: #e2136e;"></i> bKash Online Payment
+            </div>
+            <div class="pg-option" onclick="processPayment('Nagad')">
+                <i class="fa-solid fa-mobile-screen" style="color: #f7941d;"></i> Nagad Account
+            </div>
+            <div class="pg-option" onclick="processPayment('Card')">
+                <i class="fa-solid fa-credit-card" style="color: #6366f1;"></i> Credit / Debit Card
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let studentIdVal = "student";
+        let currentDues = 0;
+
+        function switchTab(tabId, element) {
+            // Remove active class from all menu items
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            // Add active class to clicked item
+            element.classList.add('active');
+
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            // Show target tab content
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            setTheme(currentTheme === 'light' ? 'dark' : 'light');
+        }
+
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            document.getElementById('theme-icon').className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            document.getElementById('theme-text').innerText = theme === 'light' ? 'Dark Mode' : 'Light Mode';
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('pdf-area');
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `Fee_Statement_${studentIdVal}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function openPaymentModal() {
+            if (currentDues <= 0) {
+                alert("You have no outstanding dues to pay!");
+                return;
+            }
+            document.getElementById('payModal').style.display = 'flex';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payModal').style.display = 'none';
+        }
+
+        function processPayment(gateway) {
+            alert(`Redirecting to ${gateway} Gateway...\nSimulated Success: Payment of ${currentDues.toLocaleString()} BDT completed!`);
+            closePaymentModal();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            setTheme(localStorage.getItem('theme') || 'dark');
+            fetch('/api/student-data')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data) return;
+                    studentIdVal = data.studentId || 'statement';
+                    document.getElementById('st-name').innerText = data.name || 'N/A';
+                    document.getElementById('st-id').innerText = data.studentId || 'N/A';
+                    document.getElementById('st-credit').innerText = data.creditTaken || '0';
+                    document.getElementById('st-tuition').innerText = Number(data.tuitionFee || 0).toLocaleString() + ' BDT';
+                    document.getElementById('st-reg').innerText = Number(data.regFee || 0).toLocaleString() + ' BDT';
+                    document.getElementById('st-scholarship').innerText = (data.scholarshipPct || '0') + '%';
+                    
+                    const payable = Number(data.totalPayable || 0);
+                    const paid = Number(data.receivedAmount || 0);
+                    document.getElementById('st-payable').innerText = payable.toLocaleString() + ' BDT';
+                    document.getElementById('st-paid').innerText = paid.toLocaleString() + ' BDT';
+
+                    const pct = payable > 0 ? Math.min(100, Math.round((paid / payable) * 100)) : 0;
+                    document.getElementById('pay-progress').style.width = pct + '%';
+                    document.getElementById('pay-progress-text').innerText = pct + '% Paid';
+                    
+                    currentDues = parseFloat(data.dues100Percent) || 0;
+                    document.getElementById('st-dues').innerText = currentDues.toLocaleString() + ' BDT';
+                    document.getElementById('modal-due-amt').innerText = currentDues.toLocaleString() + ' BDT';
+
+                    if (currentDues <= 0) {
+                        document.getElementById('due-card').classList.add('cleared');
+                        document.getElementById('st-dues').innerText = 'All Cleared 🎉';
+                        document.getElementById('st-dues').style.color = '#16a34a';
+                    }
+                });
+        });
+    </script>
+</body>
+</html>
